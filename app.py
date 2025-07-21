@@ -37,24 +37,26 @@ def add_task():
 
 @app.route('/tasks/<int:id>', methods=['PUT'])
 def update_task(id):
-    task = Task.query.get(id)
-    if not task:
-        return jsonify({"error": "Task not found"}), 404
-
     data = request.get_json()
-    task.task = data.get("task")
-    db.session.commit()
-    return jsonify({"message": "Task updated", "task": task.to_dict()})
+    task = Task.query.get(id)
+    if task:
+        task.task = data['task']
+        db.session.commit()
+        return jsonify(task.to_dict())
+    else:
+        return jsonify({'error': 'Task not found'}), 404
+    
+    
 
 @app.route('/tasks/<int:id>', methods=['DELETE'])
 def delete_task(id):
     task = Task.query.get(id)
-    if not task:
-        return jsonify({"error": "Task not found"}), 404
-
-    db.session.delete(task)
-    db.session.commit()
-    return jsonify({"message": "Task deleted"})
+    if task:
+        db.session.delete(task)
+        db.session.commit()
+        return jsonify({'message': 'Task deleted successfully'})
+    else:
+        return jsonify({'error': 'Task not found'}), 404
 
 ''' old setup no database
 @app.route('/tasks', methods=['GET'])
