@@ -1,5 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from flask import render_template
+from flask import request, redirect
 import os
 
 # Setup app
@@ -17,12 +19,42 @@ class Task(db.Model):
 
     def to_dict(self):
         return {"id": self.id, "task": self.task}
+
+
+#new route for html file
+@app.route('/show-tasks')
+def show_tasks():
+    tasks = Task.query.all()
+    return render_template('tasks.html', tasks=tasks)
+
+#new add_task with html form
+@app.route('/add-task', methods=['POST'])
+def add_task():
+    if request.is_json:
+        # JSON request (from Postman or frontend JavaScript)
+        data = request.get_json()
+        task_text = data['task']
+    else:
+        # Form submission (from tasks.html)
+        task_text = request.form['task']
+
+    new_task = Task(task=task_text)
+    db.session.add(new_task)
+    db.session.commit()
+
+    if request.is_json:
+        return jsonify(new_task.to_dict()), 201
+    else:
+        return redirect('/show-tasks')
+
+
+
 #new setup with database
 @app.route('/tasks', methods=['GET'])
 def get_tasks():
     tasks = Task.query.all()
     return jsonify([t.to_dict() for t in tasks])
-
+'''
 @app.route('/tasks', methods=['POST'])
 def add_task():
     data = request.get_json()
@@ -34,7 +66,7 @@ def add_task():
     db.session.add(new_task)
     db.session.commit()
     return jsonify({"message": "Task added!", "task": new_task.to_dict()}), 201
-
+'''
 @app.route('/tasks/<int:id>', methods=['PUT'])
 def update_task(id):
     data = request.get_json()
