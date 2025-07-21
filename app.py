@@ -9,9 +9,21 @@ def get_tasks():
 
 @app.route('/tasks', methods=['POST'])
 def add_task():
-    task = request.json.get('task')
-    tasks.append({"id": len(tasks)+1, "task": task})
-    return jsonify({"message": "Task added!"}), 201
+    data = request.get_json()
+    task_name = data.get("task")
+
+    # Simple validation
+    if not task_name:
+        return jsonify({"error": "Task name is required"}), 400
+
+    # Create a new task with ID
+    new_task = {
+        "id": len(tasks) + 1,
+        "task": task_name
+    }
+
+    tasks.append(new_task)
+    return jsonify({"message": "Task added!", "task": new_task}), 201
 
 @app.route('/tasks/<int:id>', methods=['PUT'])
 def update_task(id):
@@ -30,3 +42,11 @@ def delete_task(id):
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+'''
+## API Endpoints
+- `GET /tasks`
+- `POST /tasks`
+- `PUT /tasks/<id>`
+- `DELETE /tasks/<id>`
+'''
